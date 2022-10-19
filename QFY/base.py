@@ -64,16 +64,9 @@ class CLFQuantifier(Quantifier, ABC):
                 #self.clf.fit(X_train, y_train)
                 #y_scores[test_index] = self._clf_score(X_test)
 
-                
-                
-                print(X_train.shape, y_train.shape)
-                print(X_test.shape)
-                X_trn, x_val, y_trn, y_val = train_test_split(X_train, y_train, test_size = 0.5, stratify=y_train) 
-                print(len(X_trn), len(y_trn))
-                print(len(x_val), len(y_val))
+                X_trn, x_val, y_trn, y_val = train_test_split(X_train, y_train, test_size = 0.5, stratify=y_train)
                 self.clf.fit(X_trn, y_trn)         
-                #self.calib_clf.fit(x_val, y_val)
-                self.calib_clf.fit(X_train, y_train)
+                self.calib_clf.fit(x_val, y_val)
                 y_scores[test_index] = self._clf_score(X_test)
 
         # now fit real classifier
