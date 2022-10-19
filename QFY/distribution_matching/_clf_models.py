@@ -125,7 +125,8 @@ class GPAC(CLFModel, ProbCLFQuantifier):
 class FM(CLFModel, ProbCLFQuantifier):
 
     def __init__(self,
-                 clf=linear_model.LogisticRegression(solver='lbfgs', max_iter=1000, multi_class='auto'),
+                 #clf=linear_model.LogisticRegression(solver='lbfgs', max_iter=1000, multi_class='auto'),
+                 clf=RandomForestClassifier(n_estimators= 200),
                  distance="L2",
                  nfolds=10,
                  solve_cvx=True):
@@ -146,7 +147,8 @@ class FM(CLFModel, ProbCLFQuantifier):
         self.CM = CM / Y_cts
 
     def score(self, X):
-        return np.sum(self.clf.predict_proba(X) > self.y_prevs, axis=0) / X.shape[0]
+        #return np.sum(self.clf.predict_proba(X) > self.y_prevs, axis=0) / X.shape[0]
+        return np.sum(self.calib_clf.predict_proba(X) > self.y_prevs, axis=0) / X.shape[0]  
 
 
 # ----------------------------------------------------------------------------------------------------------------------

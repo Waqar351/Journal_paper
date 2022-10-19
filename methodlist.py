@@ -98,10 +98,10 @@ methods = {
     "func": predict_quantifier_schumacher_github,
     "kargs": {}
   },
-  #"FM": {
-   # "func": predict_quantifier_schumacher_github,
-    #"kargs": {}
-  #},
+  "FM": {
+    "func": predict_quantifier_schumacher_github,
+    "kargs": {}
+  },
   "CDE": {
     "func": predict_quantifier_schumacher_github,
     "kargs": {}
@@ -122,6 +122,10 @@ methods = {
     "func": predict_quantifier_schumacher_github,
     "kargs": {}
   },
+  "EM": {
+    "func": predict_quantifier_schumacher_github,
+    "kargs": {}
+  },
   "GAC": {
     "func": GAC,
     "kargs": {}
@@ -130,10 +134,10 @@ methods = {
     "func": GPAC,
     "kargs": {}
   },
-  "FM": {
-    "func": FM,
-    "kargs": {}
-  },
+  #"FM": {
+   # "func": FM,
+    #"kargs": {}
+  #},
   "temp": {
     "func": temporary,
     "kargs": {}

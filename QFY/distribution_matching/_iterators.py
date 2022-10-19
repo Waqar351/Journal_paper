@@ -6,12 +6,15 @@ Created on Thu Oct  4 11:31:21 2018
 """
 
 from ._base import *
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.calibration import CalibratedClassifierCV
 
 
 class MMIterator(ProbCLFQuantifier, ABC):
 
     def __init__(self,
-                 clf=linear_model.LogisticRegression(solver='lbfgs', max_iter=1000, multi_class='auto'),
+                 #clf=linear_model.LogisticRegression(solver='lbfgs', max_iter=1000, multi_class='auto'),
+                 clf=RandomForestClassifier(n_estimators= 200),         #using Random Forest as base classifier
                  eps=1e-06,
                  max_iter=1000):
 
@@ -27,7 +30,11 @@ class MMIterator(ProbCLFQuantifier, ABC):
         self.Y_rates = Y_cts[1] * 1.0 / len(y)
 
         # now fit real classifier
-        self.clf.fit(X, y)
+        #self.clf.fit(X, y)
+        
+        x_tr, x_valid, y_tr, y_valid = train_test_split(X, y, test_size = 0.5, stratify=y) 
+        self.clf.fit(x_tr, y_tr)         
+        self.calib_clf.fit(x_valid, y_valid)
 
     def fit(self, X, y):
         Y_cts = list(np.unique(y, return_counts=True))

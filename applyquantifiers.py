@@ -52,10 +52,11 @@ def apply_quantifier(qntMethod, scores, p_score, n_score, train_labels, test_sco
         the class distribution of the test calculated according to the qntMethod quantifier. 
     """
     #schumi_quantifiers = ['readme', 'HDx', 'FormanMM', 'FM', 'CDE', 'GPAC', 'GAC'] #quantifiers from schumacher paper
-    schumi_quantifiers = ['readme', 'HDx', 'FormanMM', 'CDE'] #quantifiers from schumacher paper
+    schumi_quantifiers = ['readme', 'HDx', 'FormanMM', 'CDE', 'EM', 'FM'] #quantifiers from schumacher paper
 
     if qntMethod in schumi_quantifiers:
-        return predict_quantifier_schumacher_github(schumacher_qnt, te_data)[1]
+        #return predict_quantifier_schumacher_github(schumacher_qnt, te_data)[1]
+        return predict_quantifier_schumacher_github(schumacher_qnt, te_data)[0]
     if qntMethod == "cc":
         return classify_count(test_score, thr)
     if qntMethod == "acc":        
@@ -94,8 +95,8 @@ def apply_quantifier(qntMethod, scores, p_score, n_score, train_labels, test_sco
         return GAC(scores, test_score, train_labels, nclasses = 2)
     if qntMethod == "GPAC":
         return GPAC(scores, test_score, train_labels, nclasses = 2)
-    if qntMethod == "FM":
-        return FM(scores, calib_clf, te_data, train_labels, nclasses = 2)
+    #if qntMethod == "FM":
+     #   return FM(scores, calib_clf, te_data, train_labels, nclasses = 2)
     if qntMethod == "temp":
         return temporary(scores, test_score, train_labels, nclasses = 2)
     
