@@ -55,8 +55,7 @@ def apply_quantifier(qntMethod, scores, p_score, n_score, train_labels, test_sco
     schumi_quantifiers = ['readme', 'HDx', 'FormanMM', 'CDE', 'EM', 'FM'] #quantifiers from schumacher paper
 
     if qntMethod in schumi_quantifiers:
-        #return predict_quantifier_schumacher_github(schumacher_qnt, te_data)[1]
-        return predict_quantifier_schumacher_github(schumacher_qnt, te_data)[0]
+        return predict_quantifier_schumacher_github(schumacher_qnt, te_data)[1]
     if qntMethod == "cc":
         return classify_count(test_score, thr)
     if qntMethod == "acc":        
