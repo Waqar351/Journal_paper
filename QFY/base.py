@@ -1,6 +1,9 @@
   # quantifier base class
 from abc import ABC, abstractmethod
 from sklearn import svm, linear_model, model_selection
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.calibration import CalibratedClassifierCV
 from .generals import rel_target_prevalences
 import numpy as np
 
@@ -28,7 +31,8 @@ class CLFQuantifier(Quantifier, ABC):
     def __init__(self, clf=None, nfolds=10):
         Quantifier.__init__(self)
         if clf is None:
-            self.clf = linear_model.LogisticRegression(solver='lbfgs', max_iter=1000, multi_class='auto')
+            #self.clf = linear_model.LogisticRegression(solver='lbfgs', max_iter=1000, multi_class='auto')
+            self.clf = RandomForestClassifier(n_estimators= 200)
         else:
             if not hasattr(clf, "fit") or not hasattr(clf, "predict"):
                 raise TypeError("Input clf needs to be a classifier with fit() and predict() function")
@@ -36,6 +40,7 @@ class CLFQuantifier(Quantifier, ABC):
         self.nfolds = nfolds
         self._clf_type = None
         self._clf_score = None
+        self.calib_clf = CalibratedClassifierCV(self.clf, method="sigmoid", cv="prefit")
 
     # private functions to enable scoring with either predict_proba or decision_function of underlying clf
     # def _score_proba(self, X):
@@ -56,11 +61,20 @@ class CLFQuantifier(Quantifier, ABC):
             for train_index, test_index in skf.split(X, y):
                 X_train, X_test = X[train_index], X[test_index]
                 y_train = y[train_index]
-                self.clf.fit(X_train, y_train)
+                #self.clf.fit(X_train, y_train)
+                #y_scores[test_index] = self._clf_score(X_test)
+
+                X_trn, x_val, y_trn, y_val = train_test_split(X_train, y_train, test_size = 0.5, stratify=y_train)
+                self.clf.fit(X_trn, y_trn)         
+                self.calib_clf.fit(x_val, y_val)
                 y_scores[test_index] = self._clf_score(X_test)
 
         # now fit real classifier
-        self.clf.fit(X, y)
+        #self.clf.fit(X, y)
+        
+        x_tr, x_valid, y_tr, y_valid = train_test_split(X, y, test_size = 0.5, stratify=y) 
+        self.clf.fit(x_tr, y_tr)         
+        self.calib_clf.fit(x_valid, y_valid)
 
         if nfolds < 2:
             y_scores = self._clf_score(X)
@@ -110,7 +124,8 @@ class ProbCLFQuantifier(CLFQuantifier, ABC):
             raise TypeError("Input clf needs to be a classifier with predict_proba() function")
         self.nfolds = nfolds
         self._clf_type = "prob"
-        self._clf_score = self.clf.predict_proba
+        #self._clf_score = self.clf.predict_proba
+        self._clf_score = self.calib_clf.predict_proba          #using calibrated Classifier
         # self.CM = None
 
     # default fit according to PAC

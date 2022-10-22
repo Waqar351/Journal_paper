@@ -98,10 +98,10 @@ methods = {
     "func": predict_quantifier_schumacher_github,
     "kargs": {}
   },
-  #"FM": {
-   # "func": predict_quantifier_schumacher_github,
-    #"kargs": {}
-  #},
+  "FM": {
+    "func": predict_quantifier_schumacher_github,
+    "kargs": {}
+  },
   "CDE": {
     "func": predict_quantifier_schumacher_github,
     "kargs": {}
@@ -110,33 +110,34 @@ methods = {
     "func": predict_quantifier_schumacher_github,
     "kargs": {}
   },
-  #"GPAC": {
-   # "func": predict_quantifier_schumacher_github,
-    #"kargs": {}
-  #},
-  #"GAC": {
-   # "func": predict_quantifier_schumacher_github,
-    #"kargs": {}
-  #},
-  "FormanMM": {
+  "GPAC": {
     "func": predict_quantifier_schumacher_github,
     "kargs": {}
   },
   "GAC": {
-    "func": GAC,
+    "func": predict_quantifier_schumacher_github,
     "kargs": {}
   },
-  "GPAC": {
-    "func": GPAC,
+  "FormanMM": {
+    "func": predict_quantifier_schumacher_github,
     "kargs": {}
   },
-  "FM": {
-    "func": FM,
+  "EM": {
+    "func": predict_quantifier_schumacher_github,
     "kargs": {}
   },
-  "temp": {
-    "func": temporary,
-    "kargs": {}
-  },
+  
+  #"GAC": {
+   # "func": GAC,
+    #"kargs": {}
+  #},
+  #"GPAC": {
+   # "func": GPAC,
+    #"kargs": {}
+  #},
+  #"FM": {
+   # "func": FM,
+    #"kargs": {}
+  #},
 
 }
