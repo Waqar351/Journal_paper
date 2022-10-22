@@ -110,14 +110,14 @@ methods = {
     "func": predict_quantifier_schumacher_github,
     "kargs": {}
   },
-  #"GPAC": {
-   # "func": predict_quantifier_schumacher_github,
-    #"kargs": {}
-  #},
-  #"GAC": {
-   # "func": predict_quantifier_schumacher_github,
-    #"kargs": {}
-  #},
+  "GPAC": {
+    "func": predict_quantifier_schumacher_github,
+    "kargs": {}
+  },
+  "GAC": {
+    "func": predict_quantifier_schumacher_github,
+    "kargs": {}
+  },
   "FormanMM": {
     "func": predict_quantifier_schumacher_github,
     "kargs": {}
@@ -126,21 +126,18 @@ methods = {
     "func": predict_quantifier_schumacher_github,
     "kargs": {}
   },
-  "GAC": {
-    "func": GAC,
-    "kargs": {}
-  },
-  "GPAC": {
-    "func": GPAC,
-    "kargs": {}
-  },
+  
+  #"GAC": {
+   # "func": GAC,
+    #"kargs": {}
+  #},
+  #"GPAC": {
+   # "func": GPAC,
+    #"kargs": {}
+  #},
   #"FM": {
    # "func": FM,
     #"kargs": {}
   #},
-  "temp": {
-    "func": temporary,
-    "kargs": {}
-  },
 
 }

@@ -63,7 +63,7 @@ def Run_expereiment(exp_name, method_name, niterations = 10 ):
 
             #..................Schumacher Paper Methods....................
             #schumi_quantifiers = ['readme', 'HDx', 'FormanMM', 'FM', 'CDE', 'GPAC', 'GAC']
-            schumi_quantifiers = ['readme', 'HDx', 'FormanMM', 'CDE', 'EM', 'FM']
+            schumi_quantifiers = ['readme', 'HDx', 'FormanMM', 'CDE', 'EM', 'FM', 'GPAC', 'GAC']
             
             schumacher_qnt = None
         
