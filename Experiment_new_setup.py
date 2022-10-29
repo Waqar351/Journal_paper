@@ -11,6 +11,7 @@ import sys
 from applyquantifiers import apply_quantifier
 from PWKCLF import PWKCLF
 from schumar_model_fit import fit_quantifier_schumacher_github
+import quapy as qp
 import os
 
 
@@ -35,6 +36,8 @@ def Run_expereiment(exp_name, method_name, niterations = 10 ):
     CSV file
         that contains performance of Quantification method in terms of MAE.
     
+    NOTE : To run experiemnt for any method use the following in the command prompt
+            python Experiment_new_setup.py spambase smm --it=10
    """
 
     #>>>>>>>..............Experimental_setup............>>>>>>>>>>
@@ -44,7 +47,7 @@ def Run_expereiment(exp_name, method_name, niterations = 10 ):
    measure     = "topsoe"                   #default measure for DyS
    method_kargs = methods[method_name]["kargs"]
 
-   result_path = "exp2_results"                 #Saving the output
+   result_path = "exp2_results"                 #Foldername for saving the results
    os.makedirs( result_path , exist_ok=True) 
 
    table2=pd.DataFrame() 
@@ -62,7 +65,6 @@ def Run_expereiment(exp_name, method_name, niterations = 10 ):
             rf_clf = pickle.load(open(folder +'/model_%s' % exp_name +'_%f'%train_prop + '.pkl', 'rb')) 
 
             #..................Schumacher Paper Methods....................
-            #schumi_quantifiers = ['readme', 'HDx', 'FormanMM', 'FM', 'CDE', 'GPAC', 'GAC']
             schumi_quantifiers = ['readme', 'HDx', 'FormanMM', 'CDE', 'EM', 'FM', 'GPAC', 'GAC']
             
             schumacher_qnt = None
@@ -80,7 +82,6 @@ def Run_expereiment(exp_name, method_name, niterations = 10 ):
                 model_pwk = clf.fit(tr.drop(["class","Binary_label"], axis=1), tr['class'])
             
             #..........................calibrated_model_for PCC and PACC..................
-            #tr = pd.DataFrame(tr)
             calibrt_clf = None
             if method_name == 'pcc' or 'pacc':
                 x_model_train, x_valid, y_model_train, y_valid = train_test_split(tr.drop(["class","Binary_label"], axis =1), tr["Binary_label"], test_size = 0.5, stratify=tr["Binary_label"]) 
@@ -90,7 +91,14 @@ def Run_expereiment(exp_name, method_name, niterations = 10 ):
                 
                 calibrt_clf = CalibratedClassifierCV(rf_clf2, method="sigmoid", cv="prefit") #calibrated prbabilities
                 calibrt_clf.fit(x_valid, y_valid)
-                
+
+            #........................Training EMQ method using Quapy library....................
+            mod_quapy = None    #model quapy
+            tr_quapy = qp.data.LabelledCollection(tr.drop(["class","Binary_label"], axis=1), tr['Binary_label'])
+            if method_name =='emq':
+                mod_quapy = qp.method.aggregative.EMQ(RandomForestClassifier(n_estimators=200))
+                mod_quapy.fit(tr_quapy)
+
             #>>>>>>>>>>>>>>>>................................>>>>>>>>>>>>>>>>>>>>
 
             pos_scores = scores[scores["class"]==1]["scores"]   #separating positve scores from training scores  
@@ -106,21 +114,20 @@ def Run_expereiment(exp_name, method_name, niterations = 10 ):
             batch_sizes = list(range(10, min(91, max_allowed + 1), 10)) + list(range(100, min(501, max_allowed + 1), 100))
             
             alpha_values = [0, 0.01,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]   #Test class proportion
-            #alpha_values = [0, 0.01,0.5,0.9,1]   #Test class proportion
+        
             table=pd.DataFrame()
             for sample_size in batch_sizes:   #[10,100,500], batch_sizes, Varying test set sizes
                 
                 for alpha in alpha_values: #   Varying positive class distribution
                     abs_error = []
                     error = []
-                    n_pos_pred = []; pred_pos_prop=[]
+                    pred_pos_prop=[]
                     ms_per_example = []
                     for iter in range(niterations):
                         print('Sample size #%d' % (sample_size))
                         print('iteration #%d' % (iter + 1))
 
                         pos_size = np.int(round(sample_size * alpha, 2))
-                        #neg_size = round(sample_size * (1-alpha),2)
                         neg_size = sample_size - pos_size
 
                         sample_test_pos = df_test_pos.sample( int(pos_size), replace = False)
@@ -133,7 +140,13 @@ def Run_expereiment(exp_name, method_name, niterations = 10 ):
                         
                         test_sample = sample_test.drop(["class","Binary_label"], axis=1)  #dropping class label columns
                         te_scores = rf_clf.predict_proba(test_sample)[:,1]  #estimating test sample scores
+
+                        #..............Test Sample QUAPY exp...........................
+
+                        te_quapy = qp.data.LabelledCollection(sample_test.drop(["class","Binary_label"], axis=1), test_label)
                         
+                        #>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
                         n_pos_sample_test = list(test_label).count(1) #Counting num of actual positives in test sample
                         calcultd_pos_prop = round(n_pos_sample_test/len(sample_test), 2) #actual pos class prevalence in generated sample
                     
@@ -147,8 +160,8 @@ def Run_expereiment(exp_name, method_name, niterations = 10 ):
                         
                         #.............Calling of Methods.................................................. 
                         tm_start = timer()
-                        pred_pos_prop = apply_quantifier(qntMethod= method_name, scores = scores['scores'], p_score=pos_scores,n_score=neg_scores, train_labels = scores['class'], test_score = te_scores, TprFpr = tprfpr, thr = 0.5, measure = measure, calib_clf = calibrt_clf , te_data = test_sample, pwk_clf = model_pwk, schumacher_qnt = schumacher_qnt, **method_kargs)
-                        #pred_pos_prop = apply_quantifier(qntMethod= method_name,p_score=pos_scores,n_score=neg_scores, test_score=te_scores, TprFpr = tprfpr, thr = 0.5, measure = measure, calib_clf = calibrt_clf ,te_data = test_sample)
+                        pred_pos_prop = apply_quantifier(qntMethod= method_name, scores = scores['scores'], p_score=pos_scores,n_score=neg_scores, train_labels = scores['class'], test_score = te_scores, TprFpr = tprfpr, thr = 0.5, measure = measure, calib_clf = calibrt_clf , te_data = test_sample, pwk_clf = model_pwk, schumacher_qnt = schumacher_qnt, test_quapy = te_quapy, model_quapy = mod_quapy,  **method_kargs)
+                        
                         tm_end = timer()
 
                         pred_pos_prop = np.round(pred_pos_prop,2)  #predicted class proportion
@@ -168,7 +181,6 @@ def Run_expereiment(exp_name, method_name, niterations = 10 ):
             table.columns = ["Train_sample","Train_prop","Test_sample#","Test_size","alpha","actual_prop","pred_prop","abs_error","error/bias","time","quantifier","dataset"]
             table2 = table2.append(table)
             
-    #table2.to_csv('exp2_results/' + exp_name + '_%f'% train_prop + '_%s' % method_name + '.csv', index = False)
    table2.to_csv(result_path +'/' + exp_name + '_%s' % method_name + '.csv', index = False)
 
 

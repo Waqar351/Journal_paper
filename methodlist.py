@@ -12,6 +12,7 @@ from MS import MS_method
 from MS_2 import MS_method2
 from T50 import T50
 from EMQ import EMQ
+from emq_quapy import EMQ_quapy
 from QT import QT
 from PWK import PWK
 from QT_ACC import QT_ACC
@@ -19,7 +20,6 @@ from GAC import GAC
 from GPAC import GPAC
 from FM import FM
 from schumar_model_fit import predict_quantifier_schumacher_github
-from temporary import temporary
 
 methods = {
   "cc": {
@@ -78,8 +78,12 @@ methods = {
     "func": SORD_method,
     "kargs": {}
   },
+  #"emq": {
+   # "func": EMQ,
+    #"kargs": {}
+  #},
   "emq": {
-    "func": EMQ,
+    "func": EMQ_quapy,
     "kargs": {}
   },
   "QT": {
