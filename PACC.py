@@ -23,19 +23,13 @@ def PACC(calib_clf, test_data, tprfpr, thr = 0.5):
         the class distribution of the test. 
     """
 
-    calibrated_predictions = calib_clf.predict_proba(test_data)[:,1]
-    pcc_count = np.sum(calibrated_predictions[calibrated_predictions > thr])
-    pcc_ouput = pcc_count/len(calibrated_predictions)
-    
     TprFpr = tprfpr[tprfpr['threshold'] == thr]
     
+    calibrated_predictions = calib_clf.predict_proba(test_data)[:,1]
+    pos_prop = np.mean(calibrated_predictions)    
     diff_tpr_fpr = (float(TprFpr['tpr']) - float(TprFpr['fpr']))
+    pos_prop = np.round((pos_prop - float(TprFpr['fpr'])) / diff_tpr_fpr, 2)
 
-
-    pos_prop = np.round((pcc_ouput - float(TprFpr['fpr'])) / diff_tpr_fpr)
-
-
-    
     if pos_prop <= 0:                           #clipping the output between [0,1]
         pos_prop = 0
     elif pos_prop >= 1:
