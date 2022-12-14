@@ -11,7 +11,7 @@ To access the quantifiers performance, we use `MAE` and `MRE` as a measure. For 
 Below are the results generated from our experiments.
 
 ## Runtime vs. Accuracy performance
-
+[embed]file:///C:/Journal_paper_comments/Figures/MAE%20Vs%20MRE.pdf[/embed]
 <div>
 <p align= "center">
       <img src = "Figures/Fig_instXrank.pdf" title = "A time and accuracy plot">
