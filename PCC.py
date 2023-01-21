@@ -1,5 +1,4 @@
 import numpy as np
-
 def PCC(calib_clf,test_data, thr = 0.5):
     """Probabilistic Classify & Count (PCC)
 
@@ -20,16 +19,7 @@ def PCC(calib_clf,test_data, thr = 0.5):
         the class distribution of the test. 
     """
 
-    calibrated_predictions = calib_clf.predict_proba(test_data)[:,1]
-    
-    pcc_count = np.sum(calibrated_predictions[calibrated_predictions > thr])
-    pos_prop = np.round(pcc_count/len(calibrated_predictions),2)
-
-    if pos_prop <= 0:                           #clipping the output between [0,1]
-        pos_prop = 0
-    elif pos_prop >= 1:
-        pos_prop = 1
-    else:
-        pos_prop = pos_prop
+    calibrated_predictions = calib_clf.predict_proba(test_data)[:,1]    
+    pos_prop = np.round(np.mean(calibrated_predictions), 2)
     
     return  pos_prop
