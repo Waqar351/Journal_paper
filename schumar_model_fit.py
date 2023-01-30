@@ -1,7 +1,8 @@
 import pandas as pd
 import numpy as np
 import helpers
-
+import time
+import pdb
 
 
 def fit_quantifier_schumacher_github(qntMethod, X_train, y_train):
@@ -56,4 +57,9 @@ def predict_quantifier_schumacher_github(qnt, X_test):
     array
         the class distribution of the test calculated according to the qntMethod quantifier. 
     """
-    return qnt.predict(*[np.asarray(X_test)])
+
+    start = time.time()
+    re = qnt.predict(*[np.asarray(X_test)])
+    stop = time.time()
+    #return stop - start
+    return re

@@ -1,6 +1,7 @@
 
 import numpy as np
 import qnt_utils as qntu
+import time
 
 def dys_method(pos_scores, neg_scores, test_scores, measure='topose'):
     """DYs Framework
@@ -28,6 +29,7 @@ def dys_method(pos_scores, neg_scores, test_scores, measure='topose'):
     bin_size = np.append(bin_size, 30)
     
     result  = []
+    start = time.time()
     for bins in bin_size:
         #....Creating Histograms bins score\counts for validation and test set...............
         
@@ -40,7 +42,9 @@ def dys_method(pos_scores, neg_scores, test_scores, measure='topose'):
     
         result.append(qntu.TernarySearch(0, 1, f))                                           
                         
-    pos_prop = np.round(np.median(result),2)
+    pos_prop = np.median(result)
+    stop = time.time()
+    #return stop - start
 
     return pos_prop
     

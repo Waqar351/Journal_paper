@@ -5,13 +5,15 @@ import time
 import os
 from applyquantifiers import apply_quantifier
 from methodlist import methods
+from sklearn.ensemble import RandomForestClassifier
 import sys
 import argparse
 import helpers
 from PWKCLF import PWKCLF
 from sklearn.model_selection import train_test_split
 from schumar_model_fit import fit_quantifier_schumacher_github
-import pdb
+import quapy as qp
+import sys
 
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
@@ -48,6 +50,10 @@ def Run_expereiment(method_name, niterations = 100 ):
     
     for size in Test_size:
         print('Test Size:', size)
+
+        tr = pd.DataFrame( np.random.rand(size,num_features))
+        tr_label = pd.DataFrame(np.random.randint(2,size= size).T , columns= ['class'])
+
         #...............Lodaing Scores, TPRFPR and Models.......................
         scores = pd.read_csv(folder + '/%d' % (num_features) +'/Scores_for_Runtime_Exp.csv', index_col= False)
         tprfpr = pd.read_csv(folder + '/%d' % (num_features) + '/TPRFPR_for_Runtime_Exp.csv', index_col= False)
@@ -71,20 +77,56 @@ def Run_expereiment(method_name, niterations = 100 ):
         test_label = pd.DataFrame(np.random.randint(2,size= size).T , columns= ['class'])
         
         te_scores = rf_clf.predict_proba(test_dt)[:,1]  #estimating test sample scores
+
         
+        #..................PWK model learning.....................
+        model_pwk = None
+        if method_name == 'PWK':
+            clf=PWKCLF(alpha=1, n_neighbors=10, algorithm="auto",
+                            metric="euclidean", leaf_size=30, p=2,
+                            metric_params=None, n_jobs=None)
+
+            model_pwk = clf.fit(tr, tr_label)
+        
+         #........................Training EMQ method using Quapy library....................
+        mod_quapy = None    #model quapy
+        
+
+        tr_quapy = qp.data.LabelledCollection(tr,tr_label['class'].to_numpy())
+       
+        if method_name =='emq':
+            mod_quapy = qp.method.aggregative.EMQ(RandomForestClassifier(n_estimators=200))
+            mod_quapy.fit(tr_quapy)
+
+
+        
+         #..............Test Sample QUAPY exp...........................
+        te_quapy = qp.data.LabelledCollection(test_dt, test_label['class'].to_numpy())
+
         tot_time = []
         for it in range(niterations):
             
             print('iteration :', it+1)
-            #............Calling Methods for Runtime Estimation.............
-            start = time.time()           
-            pdb.set_trace()
+            #............Calling Methods for Runtime Estimation.............       
+
             #pred_pos_prop = apply_quantifier(qntMethod= method_name,scores=scores,p_score=pos_scores,n_score=neg_scores, test_score=te_scores, TprFpr = tprfpr, thr = 0.5, measure = measure, calib_clf = calibrt_clf ,te_data = test_sample,**method_kargs)
-            pred_pos_prop = apply_quantifier(qntMethod= method_name,p_score=pos_scores,n_score=neg_scores, test_score=te_scores, TprFpr = tprfpr, thr = 0.5, measure = measure, calib_clf = calibrt_clf ,te_data = test_dt,pwk_clf= pwk_clf,schumacher_qnt=schumacher_qnt,**method_kargs)
-            stop = time.time() 
-            print(stop) 
-            pdb.set_trace()
-            tot_time.append(stop - start)
+            time_cost = apply_quantifier(qntMethod= method_name, 
+                                            scores = scores['scores'], 
+                                            p_score=pos_scores,
+                                            n_score=neg_scores, 
+                                            train_labels = scores['class'], 
+                                            test_score = te_scores, 
+                                            TprFpr = tprfpr, 
+                                            thr = 0.5, 
+                                            measure = measure, 
+                                            calib_clf = calibrt_clf, 
+                                            te_data = test_dt, 
+                                            pwk_clf = model_pwk, 
+                                            schumacher_qnt = schumacher_qnt, 
+                                            test_quapy = te_quapy, 
+                                            model_quapy = mod_quapy,  
+                                            **method_kargs)
+            tot_time.append(time_cost)
         mean_time = np.mean(tot_time)
         #table = table.append(pd.DataFrame([method_name,size,mean_time]).T)
         table = table.append({'Quantifier': method_name,'TestSize':size,'Runtime' :mean_time}, ignore_index = True)
@@ -92,13 +134,14 @@ def Run_expereiment(method_name, niterations = 100 ):
                 
         #table.columns =['Quantifier', 'TestSize', 'Runtime']    
         table.to_csv(result_path + '/'+method_name + '_runtime.csv', index=False)
-        print(table) 
+    print(table) 
         
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   #parser.add_argument('exp', type=str)
-  #parser.add_argument('method', type=str)
-  #parser.add_argument('--it', type=int, default=100)
-  #args = parser.parse_args()
-  Run_expereiment('cc', 100)
+  parser.add_argument('method', type=str)
+  parser.add_argument('--it', type=int, default=100)
+  args = parser.parse_args()
+  #Run_expereiment(sys.argv[1], 100)
+  Run_expereiment(args.method, args.it)

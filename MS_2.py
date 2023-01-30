@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-
+import time
 
 
 def MS_method2(test_scores, tprfpr):
@@ -21,6 +21,7 @@ def MS_method2(test_scores, tprfpr):
     array
         the class distribution of the test. 
     """
+    start = time.time()
 
     index = np.where(abs(tprfpr['tpr'] - tprfpr['fpr']) >(1/4) )[0].tolist()
     if index == 0:
@@ -35,18 +36,14 @@ def MS_method2(test_scores, tprfpr):
         
         diff_tpr_fpr = abs(float(tpr-fpr))  
     
-        if diff_tpr_fpr == 0.0:
-            print("bug : tpr - fpr = 0")
-            
+        if diff_tpr_fpr == 0.0:            
             diff_tpr_fpr = 1     
     
-        final_prevalence = round(abs(estimated_positive_ratio - fpr)/diff_tpr_fpr,2)  
+        final_prevalence = abs(estimated_positive_ratio - fpr)/diff_tpr_fpr
         
         prevalances_array.append(final_prevalence)  
   
     pos_prop = np.median(prevalances_array)
-
-    pos_prop = round(pos_prop,2)
     
     if pos_prop <= 0:                           #clipping the output between [0,1]
         pos_prop = 0
@@ -54,5 +51,6 @@ def MS_method2(test_scores, tprfpr):
         pos_prop = 1
     else:
         pos_prop = pos_prop
-    
+    stop = time.time()
+    #return stop - start
     return pos_prop

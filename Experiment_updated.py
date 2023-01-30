@@ -19,7 +19,7 @@ import pdb
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
-def Run_expereiment(exp_name, method_name, niterations = 10 ):
+def Run_expereiment(exp_name, method_name=None, niterations = 10 ):
    """
    This is the main function to run the experimental setup. It returns performance of quantification methods in terms MAE across different test sample sizes and training proportions and save the results in .CSV file.
     
@@ -46,10 +46,15 @@ def Run_expereiment(exp_name, method_name, niterations = 10 ):
    names_vdist = ["TS", "JD", "PS", "ORD", "SORD", "HD"] 
    counters    = ["HDy","DyS-TS","SORD", "MS", "CC", "ACC","SMM"]
    measure     = "topsoe"                   #default measure for DyS
-   method_kargs = methods[method_name]["kargs"]
 
    result_path = "exp2_results"                 #Foldername for saving the results
    os.makedirs( result_path , exist_ok=True) 
+   if method_name is None:
+    counters = ['cc','acc', 'pcc', 'pacc', 'emq', 'ms', 'ms2', 'PWK', 'smm', 'dys_Ts',
+                'hdy', 'x', 'max', 't50', 'sord','readme', 'HDx', 'FormanMM', 'CDE', 'EM', 'FM', 'GPAC', 'GAC']
+
+   else:
+    counters = method_name
 
    table2=pd.DataFrame() 
    
@@ -64,41 +69,40 @@ def Run_expereiment(exp_name, method_name, niterations = 10 ):
             tprfpr = pd.read_csv(folder + '/tprfpr_%s'% exp_name + '_%f'%train_prop + '.csv', index_col = False, engine='python')
             scores = pd.read_csv(folder +'/scores_training_%s' % exp_name + '_%f'%train_prop +'.csv', index_col=False, engine='python')
             rf_clf = pickle.load(open(folder +'/model_%s' % exp_name +'_%f'%train_prop + '.pkl', 'rb')) 
-            
             #..................Schumacher Paper Methods....................
-            schumi_quantifiers = ['readme', 'HDx', 'FormanMM', 'CDE', 'EM', 'FM', 'GPAC', 'GAC']
+            schumi_quantifiers = ['readme']#, 'HDx', 'FormanMM', 'CDE', 'EM', 'FM', 'GPAC', 'GAC']
             
             schumacher_qnt = None
-        
-            if method_name in schumi_quantifiers:
-                schumacher_qnt = fit_quantifier_schumacher_github(method_name, tr.drop(["class","Binary_label"], axis=1), tr['class'])
-
+            if len(np.isin(schumi_quantifiers, counters)) > 0:
+                schumacher_qnt = []
+                for schi in schumi_quantifiers:
+                    qnt_sch = fit_quantifier_schumacher_github(schi, tr.drop(["class","Binary_label"], axis=1), tr['class'])
+                    schumacher_qnt.append({"counter":schi, "model": qnt_sch})
             #..................PWK model learning.....................
             model_pwk = None
-            if method_name == 'PWK':
-                clf=PWKCLF(alpha=1, n_neighbors=10, algorithm="auto",
-                            metric="euclidean", leaf_size=30, p=2,
-                            metric_params=None, n_jobs=None)
+            #if method_name == 'PWK':
+            clf=PWKCLF(alpha=1, n_neighbors=10, algorithm="auto",
+                        metric="euclidean", leaf_size=30, p=2,
+                        metric_params=None, n_jobs=None)
 
-                model_pwk = clf.fit(tr.drop(["class","Binary_label"], axis=1), tr['class'])
-            
+            model_pwk = clf.fit(tr.drop(["class","Binary_label"], axis=1), tr['class'])
             #..........................calibrated_model_for PCC and PACC..................
             calibrt_clf = None
-            if method_name == 'pcc' or 'pacc':
-                x_model_train, x_valid, y_model_train, y_valid = train_test_split(tr.drop(["class","Binary_label"], axis =1), tr["Binary_label"], test_size = 0.5, stratify=tr["Binary_label"]) 
+            #if method_name == 'pcc' or 'pacc':
+            x_model_train, x_valid, y_model_train, y_valid = train_test_split(tr.drop(["class","Binary_label"], axis =1), tr["Binary_label"], test_size = 0.5, stratify=tr["Binary_label"]) 
 
-                rf_clf2 = RandomForestClassifier(n_estimators=200)
-                rf_clf2.fit(x_model_train, y_model_train)         #model is trained on new training set 
-                
-                calibrt_clf = CalibratedClassifierCV(rf_clf2, method="sigmoid", cv="prefit") #calibrated prbabilities
-                calibrt_clf.fit(x_valid, y_valid)
+            rf_clf2 = RandomForestClassifier(n_estimators=200)
+            rf_clf2.fit(x_model_train, y_model_train)         #model is trained on new training set 
+            
+            calibrt_clf = CalibratedClassifierCV(rf_clf2, method="sigmoid", cv="prefit") #calibrated prbabilities
+            calibrt_clf.fit(x_valid, y_valid)
 
             #........................Training EMQ method using Quapy library....................
             mod_quapy = None    #model quapy
             tr_quapy = qp.data.LabelledCollection(tr.drop(["class","Binary_label"], axis=1), tr['Binary_label'])
-            if method_name =='emq':
-                mod_quapy = qp.method.aggregative.EMQ(RandomForestClassifier(n_estimators=200))
-                mod_quapy.fit(tr_quapy)
+            #if method_name =='emq':
+            mod_quapy = qp.method.aggregative.EMQ(RandomForestClassifier(n_estimators=200))
+            mod_quapy.fit(tr_quapy)
 
             #>>>>>>>>>>>>>>>>................................>>>>>>>>>>>>>>>>>>>>
 
@@ -160,50 +164,56 @@ def Run_expereiment(exp_name, method_name, niterations = 10 ):
                                 measure = vdist[names_vdist.index(aux[1])]
                         
                         #.............Calling of Methods.................................................. 
-                        tm_start = timer()
-                        pred_pos_prop = apply_quantifier(qntMethod= method_name, 
-                                                        scores = scores['scores'], 
-                                                        p_score=pos_scores,
-                                                        n_score=neg_scores,
-                                                        train_labels = scores['class'], 
-                                                        test_score = te_scores, 
-                                                        TprFpr = tprfpr, 
-                                                        thr = 0.5, 
-                                                        measure = measure, 
-                                                        calib_clf = calibrt_clf, 
-                                                        te_data = test_sample, 
-                                                        pwk_clf = model_pwk, 
-                                                        schumacher_qnt = schumacher_qnt, 
-                                                        test_quapy = te_quapy, 
-                                                        model_quapy = mod_quapy,  
-                                                        **method_kargs)
-                        
-                        tm_end = timer()
+                            sch_qnt = None
+                            if co in schumi_quantifiers:
+                                l_i_sch = [x['counter']==co for x in schumacher_qnt]
+                                l_qnt_i = np.where(np.array(l_i_sch)== True)[0][0]
+                                sch_qnt = schumacher_qnt[l_qnt_i]['model']
 
-                        pred_pos_prop = np.round(pred_pos_prop,2)  #predicted class proportion
-                        
-                        #..............................RESULTS Evaluation.....................................
+                            method_kargs = methods[co]["kargs"]
+                            pred_pos_prop = apply_quantifier(qntMethod= co, 
+                                                            scores = scores['scores'], 
+                                                            p_score=pos_scores,
+                                                            n_score=neg_scores,
+                                                            train_labels = scores['class'], 
+                                                            test_score = te_scores, 
+                                                            TprFpr = tprfpr, 
+                                                            thr = 0.5, 
+                                                            measure = measure, 
+                                                            calib_clf = calibrt_clf, 
+                                                            te_data = test_sample, 
+                                                            pwk_clf = model_pwk, 
+                                                            schumacher_qnt = sch_qnt, 
+                                                            test_quapy = te_quapy, 
+                                                            model_quapy = mod_quapy,  
+                                                            **method_kargs)
+                            
 
-                        print("Calculated pos proportion: ", calcultd_pos_prop)
-                        print("Num_actual_Positives:",n_pos_sample_test,"actual_pos_proportion:", alpha )
-                        print ("Train_Proportion:",train_prop,(train_sample+1),"predict_pos_proportion:", pred_pos_prop )
-                        
-                        abs_error = np.round(abs(calcultd_pos_prop - pred_pos_prop),2) #absolute error
-                        error = np.round(calcultd_pos_prop - pred_pos_prop , 2)     # simple error Biasness
-                        ms_per_example = (tm_end - tm_start) * 1000 / len(sample_test) #time calculation
-                        
-                        table = table.append(pd.DataFrame([(train_sample+1),train_prop,(iter + 1),sample_size,alpha,calcultd_pos_prop,pred_pos_prop,abs_error,error,ms_per_example,method_name,exp_name]).T)
+
+                            pred_pos_prop = np.round(pred_pos_prop,2)  #predicted class proportion
+                            
+                            #..............................RESULTS Evaluation.....................................
+
+                            #print("Calculated pos proportion: ", calcultd_pos_prop)
+                            #print("Num_actual_Positives:",n_pos_sample_test,"actual_pos_proportion:", alpha )
+                            #print ("Train_Proportion:",train_prop,(train_sample+1),"predict_pos_proportion:", pred_pos_prop )
+                            
+                            abs_error = np.round(abs(calcultd_pos_prop - pred_pos_prop),2) #absolute error
+                            error = np.round(calcultd_pos_prop - pred_pos_prop , 2)     # simple error Biasness
+                            
+                            table = table.append(pd.DataFrame([(train_sample+1),train_prop,(iter + 1),sample_size,alpha,calcultd_pos_prop,pred_pos_prop,abs_error,error,-1,co,exp_name]).T)
+                    pdb.set_trace()
 
             table.columns = ["Train_sample","Train_prop","Test_sample#","Test_size","alpha","actual_prop","pred_prop","abs_error","error/bias","time","quantifier","dataset"]
-            table2 = table2.append(table)
-            
+            table2 = table2.append(table)       
    table2.to_csv(result_path +'/' + exp_name + '_%s' % method_name + '.csv', index = False)
 
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument('exp', type=str)
-  parser.add_argument('method', type=str)
   parser.add_argument('--it', type=int, default=10)
+  #parser.add_argument('method', required=True)
   args = parser.parse_args()
-  Run_expereiment(args.exp, args.method, args.it)
+  #Run_expereiment(args.exp, args.method, args.it)
+  Run_expereiment(args.exp, None, args.it)

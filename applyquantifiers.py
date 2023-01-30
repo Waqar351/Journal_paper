@@ -18,8 +18,24 @@ from GPAC import GPAC
 from FM import FM
 from emq_quapy import EMQ_quapy
 from schumar_model_fit import predict_quantifier_schumacher_github
+import numpy as np
+import pandas as pd
 
-def apply_quantifier(qntMethod, scores, p_score, n_score, train_labels, test_score, TprFpr, thr, measure, calib_clf, te_data, pwk_clf, schumacher_qnt, test_quapy, model_quapy):
+def apply_quantifier(qntMethod, 
+                    scores, 
+                    p_score, 
+                    n_score, 
+                    train_labels, 
+                    test_score, 
+                    TprFpr, 
+                    thr, 
+                    measure, 
+                    calib_clf, 
+                    te_data, 
+                    pwk_clf, 
+                    schumacher_qnt, 
+                    test_quapy, 
+                    model_quapy):
     """This function is an interface for running different quantification methods.
  
     Parameters
@@ -56,18 +72,14 @@ def apply_quantifier(qntMethod, scores, p_score, n_score, train_labels, test_sco
         the class distribution of the test calculated according to the qntMethod quantifier. 
     """
     
-    schumi_quantifiers = ['readme', 'HDx', 'FormanMM', 'CDE', 'EM', 'FM', 'GPAC', 'GAC'] #quantifiers from schumacher paper
+    schumi_quantifiers = ['readme', 'HDx', 'FormanMM', 'CDE', 'EM']#, 'FM' #, 'GPAC', 'GAC'] quantifiers from schumacher paper
 
     if qntMethod in schumi_quantifiers:
-        return predict_quantifier_schumacher_github(schumacher_qnt, te_data)[1]
+        return predict_quantifier_schumacher_github(schumacher_qnt, te_data)
     if qntMethod == "cc":
         return classify_count(test_score, thr)
     if qntMethod == "acc":        
         return ACC(test_score, TprFpr)
-    #if qntMethod == "emq_old":         #Our previous implementation      
-     #   return EMQ(p_score, n_score, test_score)
-    #if qntMethod == "emq":            #new implementation but not confirmed yet  
-     #   return EMQ(test_score, train_labels, nclasses=2)
     if qntMethod == "emq":          # This EMQ method is used from Quapy packages
         return EMQ_quapy(test_quapy, model_quapy)
     if qntMethod == "smm":
@@ -94,10 +106,33 @@ def apply_quantifier(qntMethod, scores, p_score, n_score, train_labels, test_sco
         return PACC(calib_clf, te_data, TprFpr, thr)
     if qntMethod == "PWK":
         return PWK(te_data, pwk_clf)
-    #if qntMethod == "GAC":
-     #   return GAC(scores, test_score, train_labels, nclasses = 2)
-    #if qntMethod == "GPAC":
-     #   return GPAC(scores, test_score, train_labels, nclasses = 2)
-    #if qntMethod == "FM":
-     #   return FM(scores, calib_clf, te_data, train_labels, nclasses = 2)
+    if qntMethod == "GAC":
+        sc_p = np.append(np.array(p_score), n_score)
+        sc_n = 1-sc_p
+        scores = np.array(pd.concat([pd.DataFrame(sc_p), pd.DataFrame(sc_n)], axis=1))    
+        sc_te = np.array(pd.concat([pd.DataFrame(test_score), pd.DataFrame(1-test_score)], axis=1))
+        l_p = np.zeros(len(p_score))
+        l_p[:] = 1
+        l_n = np.zeros(len(n_score))
+        return GAC(scores, sc_te, np.append(np.int0(l_p), np.int0(l_n)), 2)
+    if qntMethod == "GPAC":
+        sc_p = np.append(np.array(p_score), n_score)
+        sc_n = 1-sc_p
+        scores = np.array(pd.concat([pd.DataFrame(sc_p), pd.DataFrame(sc_n)], axis=1))    
+        te_scores = calib_clf.predict_proba(te_data)[:,1]  #estimating test sample scores
+        sc_te = np.array(pd.concat([pd.DataFrame(te_scores), pd.DataFrame(1-te_scores)], axis=1))
+        l_p = np.zeros(len(p_score))
+        l_p[:] = 1
+        l_n = np.zeros(len(n_score))
+        return GPAC(scores, sc_te, np.append(np.int0(l_p), np.int0(l_n)), 2)
+    if qntMethod == "FM":
+        sc_p = np.append(np.array(p_score), n_score)
+        sc_n = 1-sc_p
+        scores = np.array(pd.concat([pd.DataFrame(sc_p), pd.DataFrame(sc_n)], axis=1))    
+        te_scores = calib_clf.predict_proba(te_data)[:,1]  #estimating test sample scores
+        sc_te = np.array(pd.concat([pd.DataFrame(te_scores), pd.DataFrame(1-te_scores)], axis=1))
+        l_p = np.zeros(len(p_score))
+        l_p[:] = 1
+        l_n = np.zeros(len(n_score))        
+        return FM(scores, sc_te, np.append(np.int0(l_p), np.int0(l_n)), 2)
     

@@ -1,5 +1,6 @@
 import numpy as np
 import qnt_utils as qntu
+import time
 
 
 def Hdy(pos_scores, neg_scores,test_scores):
@@ -28,6 +29,7 @@ def Hdy(pos_scores, neg_scores,test_scores):
     
     result = []
     num_bins = []
+    start = time.time()
     for bins in bin_size:
         
         p_bin_count = qntu.getHist(pos_scores, bins)
@@ -41,12 +43,13 @@ def Hdy(pos_scores, neg_scores,test_scores):
             vDist.append(qntu.DyS_distance(((p_bin_count*x) + (n_bin_count*(1-x))), te_bin_count, measure="hellinger"))
 
         result.append(alpha_values[np.argmin(vDist)])
-        pos_prop = np.round(np.median(result),2)
+        pos_prop = np.median(result)
         
         #num_bins.append(bins)
     #bin_proportion = pd.concat([pd.DataFrame(num_bins), pd.DataFrame(result)], axis=1)
     #bin_proportion.columns = ["bins","class_proportion"]
-    
+    stop = time.time()
+    #return stop - start
     return pos_prop
     
 
