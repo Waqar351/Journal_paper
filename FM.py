@@ -1,11 +1,13 @@
 import numpy as np
 import cvxpy as cvx
 import pandas as pd
+import time
 
 import pdb
 
 def FM(train_scores, test_scores, train_labels, nclasses):
     
+    start = time.time()
     CM = np.zeros((nclasses, nclasses))
     y_cts = np.array(pd.DataFrame(train_labels).value_counts())
     #y_cts = np.array([np.count_nonzero(train_labels == i) for i in range(nclasses)])
@@ -21,4 +23,6 @@ def FM(train_scores, test_scores, train_labels, nclasses):
     constraints = [p_hat >= 0, cvx.sum(p_hat) == 1.0]
     problem = cvx.Problem(cvx.Minimize(cvx.norm(CM @ p_hat - p_y_hat)), constraints)
     problem.solve()
+    stop = time.time()
+    #return stop - start
     return p_hat.value[1]

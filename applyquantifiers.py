@@ -20,6 +20,7 @@ from emq_quapy import EMQ_quapy
 from schumar_model_fit import predict_quantifier_schumacher_github
 import numpy as np
 import pandas as pd
+import time
 
 def apply_quantifier(qntMethod, 
                     scores, 
@@ -118,21 +119,35 @@ def apply_quantifier(qntMethod,
     if qntMethod == "GPAC":
         sc_p = np.append(np.array(p_score), n_score)
         sc_n = 1-sc_p
-        scores = np.array(pd.concat([pd.DataFrame(sc_p), pd.DataFrame(sc_n)], axis=1))    
-        te_scores = calib_clf.predict_proba(te_data)[:,1]  #estimating test sample scores
-        sc_te = np.array(pd.concat([pd.DataFrame(te_scores), pd.DataFrame(1-te_scores)], axis=1))
+        scores = np.array(pd.concat([pd.DataFrame(sc_p), pd.DataFrame(sc_n)], axis=1))
         l_p = np.zeros(len(p_score))
         l_p[:] = 1
         l_n = np.zeros(len(n_score))
-        return GPAC(scores, sc_te, np.append(np.int0(l_p), np.int0(l_n)), 2)
+
+        start = time.time()    
+        te_scores = calib_clf.predict_proba(te_data)[:,1]  #estimating test sample scores
+        sc_te = np.array(pd.concat([pd.DataFrame(te_scores), pd.DataFrame(1-te_scores)], axis=1))
+
+        prop = GPAC(scores, sc_te, np.append(np.int0(l_p), np.int0(l_n)), 2)
+        stop = time.time()
+        return stop - start
+        return prop
+        #return GPAC(scores, sc_te, np.append(np.int0(l_p), np.int0(l_n)), 2)
+        
     if qntMethod == "FM":
         sc_p = np.append(np.array(p_score), n_score)
         sc_n = 1-sc_p
         scores = np.array(pd.concat([pd.DataFrame(sc_p), pd.DataFrame(sc_n)], axis=1))    
-        te_scores = calib_clf.predict_proba(te_data)[:,1]  #estimating test sample scores
-        sc_te = np.array(pd.concat([pd.DataFrame(te_scores), pd.DataFrame(1-te_scores)], axis=1))
         l_p = np.zeros(len(p_score))
         l_p[:] = 1
-        l_n = np.zeros(len(n_score))        
-        return FM(scores, sc_te, np.append(np.int0(l_p), np.int0(l_n)), 2)
-    
+        l_n = np.zeros(len(n_score))
+
+        start = time.time() 
+        te_scores = calib_clf.predict_proba(te_data)[:,1]  #estimating test sample scores
+        sc_te = np.array(pd.concat([pd.DataFrame(te_scores), pd.DataFrame(1-te_scores)], axis=1))
+        
+        prop = FM(scores, sc_te, np.append(np.int0(l_p), np.int0(l_n)), 2)
+        
+        stop = time.time()
+        return stop - start
+        return prop
