@@ -20,6 +20,7 @@ from emq_quapy import EMQ_quapy
 from schumar_model_fit import predict_quantifier_schumacher_github
 import numpy as np
 import pandas as pd
+import pdb
 import time
 
 def apply_quantifier(qntMethod, 
@@ -74,9 +75,9 @@ def apply_quantifier(qntMethod,
     """
     
     schumi_quantifiers = ['readme', 'HDx', 'FormanMM', 'CDE', 'EM']#, 'FM' #, 'GPAC', 'GAC'] quantifiers from schumacher paper
-
-    if qntMethod in schumi_quantifiers:
-        return predict_quantifier_schumacher_github(schumacher_qnt, te_data)
+    
+    if qntMethod in schumi_quantifiers:  
+        return predict_quantifier_schumacher_github(schumacher_qnt, te_data)[0]
     if qntMethod == "cc":
         return classify_count(test_score, thr)
     if qntMethod == "acc":        
@@ -112,42 +113,27 @@ def apply_quantifier(qntMethod,
         sc_n = 1-sc_p
         scores = np.array(pd.concat([pd.DataFrame(sc_p), pd.DataFrame(sc_n)], axis=1))    
         sc_te = np.array(pd.concat([pd.DataFrame(test_score), pd.DataFrame(1-test_score)], axis=1))
-        l_p = np.zeros(len(p_score))
-        l_p[:] = 1
-        l_n = np.zeros(len(n_score))
-        return GAC(scores, sc_te, np.append(np.int0(l_p), np.int0(l_n)), 2)
+        return GAC(scores, sc_te, np.array(train_labels), 2)
     if qntMethod == "GPAC":
         sc_p = np.append(np.array(p_score), n_score)
         sc_n = 1-sc_p
         scores = np.array(pd.concat([pd.DataFrame(sc_p), pd.DataFrame(sc_n)], axis=1))
-        l_p = np.zeros(len(p_score))
-        l_p[:] = 1
-        l_n = np.zeros(len(n_score))
-
-        start = time.time()    
+        start = time.time()
         te_scores = calib_clf.predict_proba(te_data)[:,1]  #estimating test sample scores
         sc_te = np.array(pd.concat([pd.DataFrame(te_scores), pd.DataFrame(1-te_scores)], axis=1))
-
-        prop = GPAC(scores, sc_te, np.append(np.int0(l_p), np.int0(l_n)), 2)
+        
+        prop = GPAC(scores, sc_te, np.array(train_labels), 2)
         stop = time.time()
         return stop - start
         return prop
-        #return GPAC(scores, sc_te, np.append(np.int0(l_p), np.int0(l_n)), 2)
-        
-    if qntMethod == "FM":
+    if qntMethod == "FM":  
         sc_p = np.append(np.array(p_score), n_score)
         sc_n = 1-sc_p
         scores = np.array(pd.concat([pd.DataFrame(sc_p), pd.DataFrame(sc_n)], axis=1))    
-        l_p = np.zeros(len(p_score))
-        l_p[:] = 1
-        l_n = np.zeros(len(n_score))
-
         start = time.time() 
         te_scores = calib_clf.predict_proba(te_data)[:,1]  #estimating test sample scores
         sc_te = np.array(pd.concat([pd.DataFrame(te_scores), pd.DataFrame(1-te_scores)], axis=1))
-        
-        prop = FM(scores, sc_te, np.append(np.int0(l_p), np.int0(l_n)), 2)
-        
+        prop = FM(scores, sc_te, np.array(train_labels), 2)
         stop = time.time()
         return stop - start
         return prop
