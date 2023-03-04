@@ -8,6 +8,7 @@ from sklearn.ensemble import RandomForestClassifier
 from explist import Experiments as Exp
 from scorer import scorer
 from getTPRFPR import getTPRFPR
+from get_calibrated_training_scores import get_training_scores
 import os
 
 
@@ -99,7 +100,10 @@ def model_learning(dataset):
 
             #.................. Estimating training Scores.................................. 
             training_scores = pd.DataFrame(scorer(sample_tr, sample_train_label, folds_num))
-            
+
+            #.................. Estimating Calibrated Training scores ......................
+            calibrated_training_scores, calibrate_clf = get_training_scores(sample_tr, sample_train_label, 2)
+
             #...................Estimating TPR & FPR........................................
             tprfpr = pd.DataFrame()
             tprfpr = getTPRFPR(training_scores)
@@ -111,12 +115,15 @@ def model_learning(dataset):
             pd.DataFrame(sample_train.to_csv(new_path + '/train_data_%s'%dataset + '_%f'%alpha + '.csv', index = False))   #saving sample from the partition of training data
             pd.DataFrame(X_test.to_csv(new_path + '/test_data_%s'%dataset + '_%f'%alpha + '.csv', index = False))    #saving partition of test data
             tprfpr.to_csv(new_path + '/tprfpr_%s'%dataset + '_%f'%alpha + '.csv', index=False)         #saving tpr and fpr 
-            training_scores.to_csv(new_path +'/scores_training_%s'%dataset + '_%f'%alpha +'.csv', index = False)
+            training_scores.to_csv(new_path +'/scores_training_%s'%dataset + '_%f'%alpha +'.csv', index = False)  #Saving training scores
+            pd.DataFrame(calibrated_training_scores).to_csv(new_path +'/calibrated_scores_training_%s'%dataset + '_%f'%alpha +'.csv', index = False)    #saving calibrated training scores
 
             with open(new_path +'/model_%s'%dataset +'_%f'%alpha + '.pkl', mode='wb') as out:        #saving the learned scorer/model
-                pickle.dump(rf_clf, file= out)
+               pickle.dump(rf_clf, file= out)
+            
+            with open(new_path +'/calibrated_model_%s'%dataset +'_%f'%alpha + '.pkl', mode='wb') as out:        #saving the calibrated scorer/model
+                pickle.dump(calibrate_clf, file= out)
         
-
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()

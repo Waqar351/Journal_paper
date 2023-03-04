@@ -4,13 +4,14 @@ import pdb
 import time
 
 def GPAC(train_scores, test_scores, train_labels, nclasses):
-    start = time.time()
+    
     CM = np.zeros((nclasses, nclasses))
     for i in range(nclasses):
         idx = np.where(train_labels == i)[0]
         CM[i] = np.sum(train_scores[idx], axis=0)
         CM[i] /= np.sum(CM[i])
     CM = CM.T
+    start = time.time()
     p_y_hat = np.sum(test_scores, axis = 0)
     p_y_hat = p_y_hat / np.sum(p_y_hat)
 
@@ -21,5 +22,3 @@ def GPAC(train_scores, test_scores, train_labels, nclasses):
     stop = time.time()
     #return stop - start
     return p_hat.value[1]
-
-    

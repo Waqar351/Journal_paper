@@ -63,10 +63,12 @@ def Run_expereiment(exp_name, method_name, niterations = 10 ):
             te = pd.read_csv(folder + '/test_data_%s' % exp_name + '_%f'%train_prop + '.csv', index_col=False, engine='python')
             tprfpr = pd.read_csv(folder + '/tprfpr_%s'% exp_name + '_%f'%train_prop + '.csv', index_col = False, engine='python')
             scores = pd.read_csv(folder +'/scores_training_%s' % exp_name + '_%f'%train_prop +'.csv', index_col=False, engine='python')
-            rf_clf = pickle.load(open(folder +'/model_%s' % exp_name +'_%f'%train_prop + '.pkl', 'rb')) 
+            rf_clf = pickle.load(open(folder +'/model_%s' % exp_name +'_%f'%train_prop + '.pkl', 'rb'))
+            calibrt_scores = pd.read_csv(folder +'/calibrated_scores_training_%s' % exp_name + '_%f'%train_prop +'.csv', index_col=False, engine='python')
+            calibrt_clf = pickle.load(open(folder +'/calibrated_model_%s' % exp_name +'_%f'%train_prop + '.pkl', 'rb')) 
             
             #..................Schumacher Paper Methods....................
-            schumi_quantifiers = ['readme', 'HDx', 'FormanMM', 'CDE', 'EM', 'FM', 'GPAC', 'GAC']
+            schumi_quantifiers = ['readme', 'HDx', 'FormanMM', 'CDE', 'EM']#, 'FM', 'GPAC', 'GAC']
             
             schumacher_qnt = None
         
@@ -83,15 +85,17 @@ def Run_expereiment(exp_name, method_name, niterations = 10 ):
                 model_pwk = clf.fit(tr.drop(["class","Binary_label"], axis=1), tr['class'])
             
             #..........................calibrated_model_for PCC and PACC..................
-            calibrt_clf = None
-            if method_name == 'pcc' or 'pacc':
-                x_model_train, x_valid, y_model_train, y_valid = train_test_split(tr.drop(["class","Binary_label"], axis =1), tr["Binary_label"], test_size = 0.5, stratify=tr["Binary_label"]) 
+            # calibrt_clf = None
+            # if method_name == 'pcc' or 'pacc':
+            #     x_model_train, x_valid, y_model_train, y_valid = train_test_split(tr.drop(["class","Binary_label"], axis =1), tr["Binary_label"], test_size = 0.5, stratify=tr["Binary_label"]) 
 
-                rf_clf2 = RandomForestClassifier(n_estimators=200)
-                rf_clf2.fit(x_model_train, y_model_train)         #model is trained on new training set 
-                
-                calibrt_clf = CalibratedClassifierCV(rf_clf2, method="sigmoid", cv="prefit") #calibrated prbabilities
-                calibrt_clf.fit(x_valid, y_valid)
+            #     rf_clf2 = RandomForestClassifier(n_estimators=200)
+            #     rf_clf2.fit(x_model_train, y_model_train)         #model is trained on new training set 
+            #     print('waqar')
+            #     calibrt_clf = CalibratedClassifierCV(rf_clf2, method="sigmoid", cv="prefit") #calibrated prbabilities
+            #     calibrt_clf.fit(x_valid, y_valid)
+            #     print(method_name)
+            #     print('waqar')
 
             #........................Training EMQ method using Quapy library....................
             mod_quapy = None    #model quapy
@@ -104,6 +108,9 @@ def Run_expereiment(exp_name, method_name, niterations = 10 ):
 
             pos_scores = scores[scores["class"]==1]["scores"]   #separating positve scores from training scores  
             neg_scores = scores[scores["class"]==0]["scores"]
+
+            cal_pos_scores = calibrt_scores[calibrt_scores["class"]==1]["scores"]   #separating positve scores from calibtrated training scores  
+            cal_neg_scores = calibrt_scores[calibrt_scores["class"]==0]["scores"]
             
             df_test = pd.DataFrame(te)
             print('test_lenght',len(df_test))
@@ -170,7 +177,10 @@ def Run_expereiment(exp_name, method_name, niterations = 10 ):
                                                         TprFpr = tprfpr, 
                                                         thr = 0.5, 
                                                         measure = measure, 
-                                                        calib_clf = calibrt_clf, 
+                                                        calib_clf = calibrt_clf,
+                                                        calib_scores = calibrt_scores,
+                                                        calib_pos_scores = cal_pos_scores, 
+                                                        calib_neg_scores = cal_neg_scores, 
                                                         te_data = test_sample, 
                                                         pwk_clf = model_pwk, 
                                                         schumacher_qnt = schumacher_qnt, 

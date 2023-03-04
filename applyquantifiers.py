@@ -32,7 +32,10 @@ def apply_quantifier(qntMethod,
                     TprFpr, 
                     thr, 
                     measure, 
-                    calib_clf, 
+                    calib_clf,
+                    calib_scores, 
+                    calib_pos_scores, 
+                    calib_neg_scores, 
                     te_data, 
                     pwk_clf, 
                     schumacher_qnt, 
@@ -109,31 +112,32 @@ def apply_quantifier(qntMethod,
     if qntMethod == "PWK":
         return PWK(te_data, pwk_clf)
     if qntMethod == "GAC":
-        sc_p = np.append(np.array(p_score), n_score)
+        sc_p = np.append(np.array(calib_pos_scores), calib_neg_scores)
         sc_n = 1-sc_p
         scores = np.array(pd.concat([pd.DataFrame(sc_p), pd.DataFrame(sc_n)], axis=1))    
         sc_te = np.array(pd.concat([pd.DataFrame(test_score), pd.DataFrame(1-test_score)], axis=1))
         return GAC(scores, sc_te, np.array(train_labels), 2)
     if qntMethod == "GPAC":
-        sc_p = np.append(np.array(p_score), n_score)
+        sc_p = np.append(np.array(calib_pos_scores), calib_neg_scores)
         sc_n = 1-sc_p
         scores = np.array(pd.concat([pd.DataFrame(sc_p), pd.DataFrame(sc_n)], axis=1))
         start = time.time()
-        te_scores = calib_clf.predict_proba(te_data)[:,1]  #estimating test sample scores
-        sc_te = np.array(pd.concat([pd.DataFrame(te_scores), pd.DataFrame(1-te_scores)], axis=1))
+        #te_scores = calib_clf.predict_proba(te_data)[:,1]  #estimating test sample scores
+        #sc_te = np.array(pd.concat([pd.DataFrame(te_scores), pd.DataFrame(1-te_scores)], axis=1))
+        sc_te = np.array(pd.concat([pd.DataFrame(test_score), pd.DataFrame(1-test_score)], axis=1))
         
         prop = GPAC(scores, sc_te, np.array(train_labels), 2)
         stop = time.time()
-        return stop - start
+        #return stop - start
         return prop
     if qntMethod == "FM":  
-        sc_p = np.append(np.array(p_score), n_score)
+        sc_p = np.append(np.array(calib_pos_scores), calib_neg_scores)        
         sc_n = 1-sc_p
-        scores = np.array(pd.concat([pd.DataFrame(sc_p), pd.DataFrame(sc_n)], axis=1))    
+        scores = np.array(pd.concat([pd.DataFrame(sc_p), pd.DataFrame(sc_n)], axis=1))
         start = time.time() 
         te_scores = calib_clf.predict_proba(te_data)[:,1]  #estimating test sample scores
         sc_te = np.array(pd.concat([pd.DataFrame(te_scores), pd.DataFrame(1-te_scores)], axis=1))
         prop = FM(scores, sc_te, np.array(train_labels), 2)
         stop = time.time()
-        return stop - start
+        #return stop - start
         return prop

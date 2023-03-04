@@ -20,5 +20,5 @@ def GAC(train_scores, test_scores, train_labels, nclasses):
     problem.solve()
 
     stop = time.time()
-    return stop - start
+    #return stop - start
     return p_hat.value[1]
