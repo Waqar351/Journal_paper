@@ -140,7 +140,7 @@ Experiments = {
     "output_tprfpr": "models_train_test/handwritten/tprfpr_handwritten.csv",
 
     "class_feature": "class",
-    "positive_label": "q",
+    "positive_label": "1",
     "negative_labels": None, # all other labels
     "features": lambda x: x != 'letter' and x != 'author',
   },
@@ -173,7 +173,7 @@ Experiments = {
     "features": ["temperature", "wbf","eh_1","eh_2","eh_3","eh_4","eh_5","eh_6","eh_7","eh_8","eh_9","eh_10","eh_11","eh_12","eh_13","eh_14","eh_15","eh_16","eh_17","eh_18","eh_19","eh_20","eh_21","eh_22","eh_23","eh_24","eh_25"],
   },
   "aedessex": {
-    "input": "datasets/AedesSex.csv",
+    "input": "datasets/aedessex.csv",
     "model_input": "models_train_test/aedessex/model_aedessex.pkl",
     "train_dt_input": "models_train_test/aedessex/train_data_aedessex.csv",
     "test_dt_input": "models_train_test/aedessex/test_data_aedessex.csv",

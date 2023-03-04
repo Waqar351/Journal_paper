@@ -1,0 +1,15 @@
+Test Size: 100
+Traceback (most recent call last):
+  File "C:\Jounal_work\mlquantification-master\Exp_RunTime_UPDATED.py", line 147, in <module>
+    Run_expereiment(args.method, args.it)
+  File "C:\Jounal_work\mlquantification-master\Exp_RunTime_UPDATED.py", line 69, in Run_expereiment
+    schumacher_qnt = fit_quantifier_schumacher_github(method_name, instances, label)
+  File "C:\Jounal_work\mlquantification-master\schumar_model_fit.py", line 41, in fit_quantifier_schumacher_github
+    qf.fit(*fit_args)
+  File "C:\Jounal_work\mlquantification-master\QFY\distribution_matching\_clf_models.py", line 32, in fit
+    self._fit(X, y, Y_cts)
+  File "C:\Jounal_work\mlquantification-master\QFY\distribution_matching\_clf_models.py", line 27, in _fit
+    self._fit_cm(y, y_scores, Y_cts)
+  File "C:\Jounal_work\mlquantification-master\QFY\distribution_matching\_clf_models.py", line 88, in _fit_cm
+    CM = confusion_matrix(y, y_scores, self.Y).transpose()
+TypeError: confusion_matrix() takes 2 positional arguments but 3 were given

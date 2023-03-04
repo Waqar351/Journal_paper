@@ -1,0 +1,24 @@
+nohup python3 Exp_RunTime_UPDATED.py cc > output_cc.log &
+nohup python3 Exp_RunTime_UPDATED.py acc > output_acc.log &
+nohup python3 Exp_RunTime_UPDATED.py pcc > output_pcc.log &
+nohup python3 Exp_RunTime_UPDATED.py pacc > output_pacc.log &
+nohup python3 Exp_RunTime_UPDATED.py HDx > output_HDx.log &
+nohup python3 Exp_RunTime_UPDATED.py hdy > output_hdy.log &
+nohup python3 Exp_RunTime_UPDATED.py emq > output_emq.log &
+nohup python3 Exp_RunTime_UPDATED.py smm > output_smm.log &
+nohup python3 Exp_RunTime_UPDATED.py dys_Ts > output_dys_Ts.log &
+nohup python3 Exp_RunTime_UPDATED.py sord > output_sord.log &
+nohup python3 Exp_RunTime_UPDATED.py ms > output_ms.log &
+nohup python3 Exp_RunTime_UPDATED.py ms2 > output_ms2.log &
+nohup python3 Exp_RunTime_UPDATED.py max > output_max.log &
+nohup python3 Exp_RunTime_UPDATED.py x > output_x.log &
+nohup python3 Exp_RunTime_UPDATED.py t50 > output_t50.log &
+nohup python3 Exp_RunTime_UPDATED.py PWK > output_PWK.log &
+nohup python3 Exp_RunTime_UPDATED.py readme > output_readme.log &
+nohup python3 Exp_RunTime_UPDATED.py FormanMM > output_FormanMM.log &
+nohup python3 Exp_RunTime_UPDATED.py CDE > output_CDE.log &
+nohup python3 Exp_RunTime_UPDATED.py EM > output_EM.log &
+nohup python3 Exp_RunTime_UPDATED.py FM > output_FM.log &
+nohup python3 Exp_RunTime_UPDATED.py GPAC > output_GPAC.log &
+nohup python3 Exp_RunTime_UPDATED.py GAC > output_GAC.log &
+

@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from getTPRFPR import getTPRFPR
+import time
 
 def Max(test_scores, tprfpr):
     """MAX method
@@ -28,6 +29,7 @@ def Max(test_scores, tprfpr):
     max_index = diff_tpr_fpr.index(max(diff_tpr_fpr))         #Finding index where (tpr-fpr) is maximum
     threshold, fpr, tpr = tprfpr.loc[max_index]            #taking threshold,tpr and fpr where (tpr - fpr) is maximum
     
+    start = time.time()
     class_prop = len(np.where(test_scores >= threshold)[0])/len(test_scores)
     
     #pos_prop = round(abs(class_prop - fpr)/abs(tpr - fpr),2)   #adjusted class proportion
@@ -35,7 +37,7 @@ def Max(test_scores, tprfpr):
     if (tpr - fpr)==0:
         pos_prop = class_prop
     else:
-        pos_prop = round((class_prop - fpr)/(tpr - fpr),2)   #adjusted class proportion
+        pos_prop = (class_prop - fpr)/(tpr - fpr)   #adjusted class proportion
   
     
     if pos_prop <= 0:                           #clipping the output between [0,1]
@@ -45,4 +47,6 @@ def Max(test_scores, tprfpr):
     else:
         pos_prop = pos_prop
 
+    stop = time.time()
+    #return stop - start
     return pos_prop

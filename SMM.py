@@ -1,4 +1,5 @@
 import numpy as np
+import time
 
 def SMM(pos_scores, neg_scores,test_scores):
     """Sample Mean Matching
@@ -23,6 +24,7 @@ def SMM(pos_scores, neg_scores,test_scores):
     mean_pos_scr = np.mean(pos_scores)
     mean_neg_scr = np.mean(neg_scores)  #calculating mean of pos & neg scores
     
+    start = time.time()
     mean_te_scr = np.mean(test_scores)              #Mean of test scores
          
     alpha =  (mean_te_scr - mean_neg_scr)/(mean_pos_scr - mean_neg_scr)     #evaluating Positive class proportion
@@ -34,7 +36,8 @@ def SMM(pos_scores, neg_scores,test_scores):
     else:
         pos_prop = alpha
     
-    pos_prop = round(pos_prop, 2)
+    stop = time.time()
+    #return stop - start
 
     return pos_prop
     

@@ -1,4 +1,5 @@
 import numpy as np
+import time
 
 def classify_count(test_scores,thr=0.5):
     """Classify & Count (CC)
@@ -17,10 +18,9 @@ def classify_count(test_scores,thr=0.5):
     array
         the class distribution of the test. 
     """
-    
-    count = len(np.where(test_scores >= thr)[0])      #Faster than using for loop below
-    #count = len([i for i in test_scores if i >= thr])
-    
-    pos_prop = np.round(count/len(test_scores),2)
-    
+    start = time.time()
+    count = len(np.where(test_scores >= thr)[0])  
+    pos_prop = count/len(test_scores)
+    stop = time.time()
+    #return stop - start
     return pos_prop

@@ -1,4 +1,5 @@
 import numpy as np
+import time
 
 def ACC(test_scores, tprfpr, thr = 0.5):
     """Adjust Classify & Count (ACC)
@@ -20,17 +21,14 @@ def ACC(test_scores, tprfpr, thr = 0.5):
         the class distribution of the test. 
     """
     
-    count = len(np.where(test_scores >= thr)[0])      #Faster than using for loop below
-    #count = len([i for i in test_scores if i >= thr])
-    
-    cc_ouput = count/len(test_scores)
-    
     TprFpr = tprfpr[tprfpr['threshold'] == thr]
+    count = len(np.where(test_scores >= thr)[0])      #Faster than using for loop below    
+    cc_ouput = count/len(test_scores)   
     
     if (float(TprFpr['tpr']) - float(TprFpr['fpr'])) == 0:
         pos_prop = cc_ouput
     else:
-        pos_prop = np.round((cc_ouput - float(TprFpr['fpr']))/(float(TprFpr['tpr']) - float(TprFpr['fpr'])),2)   #adjusted class proportion
+        pos_prop = (cc_ouput - float(TprFpr['fpr']))/(float(TprFpr['tpr']) - float(TprFpr['fpr']))   #adjusted class proportion
     
 
     if pos_prop <= 0:                           #clipping the output between [0,1]
@@ -39,5 +37,4 @@ def ACC(test_scores, tprfpr, thr = 0.5):
         pos_prop = 1
     else:
         pos_prop = pos_prop
- 
     return pos_prop

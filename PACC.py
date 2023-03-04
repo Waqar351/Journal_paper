@@ -1,4 +1,5 @@
 import numpy as np
+import time
 
 def PACC(calib_clf, test_data, tprfpr, thr = 0.5):
 
@@ -24,11 +25,11 @@ def PACC(calib_clf, test_data, tprfpr, thr = 0.5):
     """
 
     TprFpr = tprfpr[tprfpr['threshold'] == thr]
-    
+    start = time.time()
     calibrated_predictions = calib_clf.predict_proba(test_data)[:,1]
     pos_prop = np.mean(calibrated_predictions)    
     diff_tpr_fpr = (float(TprFpr['tpr']) - float(TprFpr['fpr']))
-    pos_prop = np.round((pos_prop - float(TprFpr['fpr'])) / diff_tpr_fpr, 2)
+    pos_prop = (pos_prop - float(TprFpr['fpr'])) / diff_tpr_fpr
 
     if pos_prop <= 0:                           #clipping the output between [0,1]
         pos_prop = 0
@@ -37,5 +38,7 @@ def PACC(calib_clf, test_data, tprfpr, thr = 0.5):
     else:
         pos_prop = pos_prop
 
+    stop = time.time()
+    #return stop - start
     return pos_prop
     

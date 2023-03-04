@@ -1,4 +1,5 @@
 import numpy as np
+import time
 
 def SORD_method(pos_scores, neg_scores,test_scores):
     """SORD
@@ -29,7 +30,7 @@ def SORD_method(pos_scores, neg_scores,test_scores):
     ts    = test_scores
     
     vDist   = []
-    
+    start = time.time()
     for k in alpha:        
         pos = np.array(sc_1)
         neg = np.array(sc_2)
@@ -57,5 +58,6 @@ def SORD_method(pos_scores, neg_scores,test_scores):
         vDist.append(total_cost)        
         
     pos_prop = alpha[vDist.index(min(vDist))]
-    
+    stop = time.time()
+    #return stop - start
     return pos_prop

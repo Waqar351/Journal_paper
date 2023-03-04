@@ -11,6 +11,7 @@ import helpers
 from PWKCLF import PWKCLF
 from sklearn.model_selection import train_test_split
 from schumar_model_fit import fit_quantifier_schumacher_github
+import pdb
 
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
@@ -44,7 +45,7 @@ def Run_expereiment(method_name, niterations = 100 ):
     
     Test_size = [100, 1000, 10000, 20000,30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000 ]
     table= pd.DataFrame( columns =['Quantifier', 'TestSize', 'Runtime'])
-
+    
     for size in Test_size:
         print('Test Size:', size)
         #...............Lodaing Scores, TPRFPR and Models.......................
@@ -77,9 +78,12 @@ def Run_expereiment(method_name, niterations = 100 ):
             print('iteration :', it+1)
             #............Calling Methods for Runtime Estimation.............
             start = time.time()           
+            pdb.set_trace()
             #pred_pos_prop = apply_quantifier(qntMethod= method_name,scores=scores,p_score=pos_scores,n_score=neg_scores, test_score=te_scores, TprFpr = tprfpr, thr = 0.5, measure = measure, calib_clf = calibrt_clf ,te_data = test_sample,**method_kargs)
             pred_pos_prop = apply_quantifier(qntMethod= method_name,p_score=pos_scores,n_score=neg_scores, test_score=te_scores, TprFpr = tprfpr, thr = 0.5, measure = measure, calib_clf = calibrt_clf ,te_data = test_dt,pwk_clf= pwk_clf,schumacher_qnt=schumacher_qnt,**method_kargs)
-            stop = time.time()  
+            stop = time.time() 
+            print(stop) 
+            pdb.set_trace()
             tot_time.append(stop - start)
         mean_time = np.mean(tot_time)
         #table = table.append(pd.DataFrame([method_name,size,mean_time]).T)
@@ -94,7 +98,7 @@ def Run_expereiment(method_name, niterations = 100 ):
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   #parser.add_argument('exp', type=str)
-  parser.add_argument('method', type=str)
-  parser.add_argument('--it', type=int, default=100)
-  args = parser.parse_args()
-  Run_expereiment(args.method, args.it)
+  #parser.add_argument('method', type=str)
+  #parser.add_argument('--it', type=int, default=100)
+  #args = parser.parse_args()
+  Run_expereiment('cc', 100)
